@@ -43,7 +43,7 @@ class Dice(QMainWindow):
             lst.append(sum)
 
         for i in range(dice_count, (dice_count * 6) + 1):
-            procent = (lst.count(i)) / 10**6 * 100
+            percent = (lst.count(i)) / 10**6 * 100
             result[i] = percent
         self.result_label.setText(str(result))
 
