@@ -2,7 +2,7 @@ import sys
 import random
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
 
-class GuessNumberApp(QWidget):
+class count_app(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -44,6 +44,6 @@ class GuessNumberApp(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = GuessNumberApp()
+    window = count_app()
     window.show()
     sys.exit(app.exec())
