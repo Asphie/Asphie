@@ -1,49 +1,51 @@
 import sys
-import random
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLineEdit, QLabel, QPushButton
+from random import randint
 
-class count_app(QWidget):
+class kubiki(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.initUI()
 
-        self.setWindowTitle('Угадай число')
-        self.setGeometry(200,200,200,200)
-
-        self.rng_num = random.randint(1, 100)
-        self.attempts = 8
-
+    def initUI(self):
+        self.setWindowTitle('Кубики')
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        self.dice_count_input = QLineEdit()
+        self.summa_input = QLineEdit()
+        self.result_label = QLabel()
+        count_button = QPushButton("Посчитать вероятность")
+        count_button.clicked.connect(self.calculatePercentages)
         layout = QVBoxLayout()
-
-        self.label = QLabel('Угадай число 1 до 100:')
-        layout.addWidget(self.label)
-
-        self.input = QLineEdit()
-        layout.addWidget(self.input)
-
-        self.button = QPushButton('Ввести')
-        self.button.clicked.connect(self.gss)
-        layout.addWidget(self.button)
-
-        self.result_label = QLabel('')
+        layout.addWidget(QLabel("Число кубиков:"))
+        layout.addWidget(self.dice_count_input)
+        layout.addWidget(count_button)
         layout.addWidget(self.result_label)
+        central_widget.setLayout(layout)
 
-        self.setLayout(layout)
+    def calculatePercentages(self):
+        result = {}
+        lst = []
+        summa = 0
+        procent = 0
+        dice_count = int(self.dice_count_input.text())
 
-    def gss(self):
-        guess = int(self.input.text())
-        if guess < self.rng_num:
-            self.result_label.setText('Загаданное число больше')
-        elif guess > self.rng_num:
-            self.result_label.setText('Загаданное число меньше')
-        else:
-            self.result_label.setText('Вы угадали!')
-        self.attempts -= 1
-        if self.attempts == 0:
-            self.result_label.setText('Вы проиграли. Было загадано число: ' + str(self.rng_num))
-            self.button.setEnabled(False)
+        for _ in range(0, 1000000):
+            dice_num = 0
+            summa = 0
+            for j in range(dice_count):
+                dice_num = randint(1, 6)
+                summa = summa + dice_num
+            lst.append(summa)
+
+        for i in range(dice_count, (dice_count * 6) + 1):
+            procent = (lst.count(i)) / 10**6 * 100
+            result[i] = procent
+        self.result_label.setText(str(result))
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = count_app()
+    window = kubiki()
     window.show()
     sys.exit(app.exec())
