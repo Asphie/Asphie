@@ -1,300 +1,360 @@
 import sys
-import sqlite3 as sq 
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout , QLineEdit,QRadioButton, QMessageBox
-import time
+import sqlite3 as sq
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QLineEdit, QRadioButton, QMessageBox
+from PyQt6.QtCore import QTimer
+from datetime import datetime
+import pandas as pd
 
-employees=20
-guests=5
-
-current=[("Алексеев","Илья","Алексеевич","23-Apr-1994","директор по информатизации","+79993456785","aleksee45@mail.ru","NULL","NULL"),
-("Аржанов","Владислав","Александрович","27-Jan-1995","начальние отдела кадров","+79063194556","arhjanov12@yandex.ru","NULL","NULL"),
-("Белоцерковец ","Дмитрий","Александрович","12-Sep-1983","менеджер","+79773332123","belotserkovets@gmail.com","NULL","NULL"),
-("Богушев","Арсений","Александрович","09-Dec-1973","директор","+79264444334","Bogushev@mail.ru","NULL","NULL"),
-("Гундарова","Софья","Анатольевна","30-Nov-1995","менеджер","+79256789012","Gundarova@yandex.ru","NULL","NULL"),
-("Долженков","Борис","Алексеевич","23-Jun-2002","курьер","+79003196748","Dolzhenkov@gmail.com","NULL","NULL"),
-("Журавова","Ангелина","Сергеевна","17-Aug-2002","специалист по корреспонденции","+79836571245","Zhuravova@gmail.com","NULL","NULL"),
-("Клевцова","Варвара","Андреевна","15-Oct-2002","секретарь","+79023672156","Klevtsova@gmail.com","NULL","NULL"),
-("Коваленко","Вероника","Александровна","17-Jul-1997","менеджер","+79271285522","Kovalenko@gmail.com","NULL","NULL"),
-("Королев","Платон","Валеорьевич","13-Mar-1993","главный бухгалтер","+79773045689","Korolev@gmail.com","NULL","NULL"),
-("Кубышкин","Роман","Евгеньевич","10-Oct-1985","менеджер по технологии","+79013219045","Kubyshkin@gmail.com","NULL","NULL"),
-("Макаренко","Константин","Викторович","11-Nov-1984","бизнес аналитик","+79992341289","Makarenko@gmail.com","NULL","NULL"),
-("Мартиросов","Артемий","Артурович","01-Feb-1974","smm - менеджер","+79027893459","Martirosov@gmail.com","NULL","NULL"),
-("Мелкумян","Роберт","Робертович","16-May-1993","маркетолог","+79982341290","Melkumyan@gmail.com","NULL","NULL"),
-("Олейник","Ольга","Викторовна","18-Jun-1993","руководитель проекта","+79762349987","Oleinik@gmail.com","NULL","NULL"),
-("Полюцкий","Александр","Сергеевич","19-Jan-1981","юрист-консультант","+79673421894","Polyutsky@gmail.com","NULL","NULL"),
-("Рустамов","Иброхим","Рустамович","29-Oct-1982","зав.хозяйством","+79231782392","Rustamov@gmail.com","NULL","NULL"),
-("Рябцева","Алена","Александровна","14-Nov-1982","бухгалтер","+79321743981","Ryabtseva@gmail.com","NULL","NULL"),
-("Саберова","Динара","Равилевна","28-Dec-1994","главный юрист","+79992341084","Saberova@gmail.com","NULL","NULL"),
-("Сафонова","Ирина","Ивановна","15-Jul-1983","делопроизводитель","+79253419861","Safonov@gmail.com","NULL","NULL"),
-("Стронина","София","Евгеньевна","31-Mar-2002","секретарь","+79162381629","Stronina@gmail.com","NULL","NULL"),
-("Тарасов","Степан","Павлович","06-Jun-1996","менеджер","+79152371823","Тарасов@gmail.com","NULL","NULL"),
-("Чекменёв","Кирилл","Андреевич","02-Aug-1998","дизайнер","+79172361959","Chekmenev@gmail.com","NULL","NULL"),
-("Чернов","Максим","Дмитриевич","23-Dec-1999","аналитик","+79293652732","Chernov@gmail.com","NULL","NULL"),
-("Шарофидинова","Ирода","Отабек","21-Mar-1991","уборщица","+79002893276","Sharofidinov@gmail.com","NULL","NULL"),
-("Шундрик","Егор","Максимович","07-Apr-1992","расчетчик","+79281123119","Shundrick@gmail.com","NULL","NULL"),
-("Шушняев","Никита","Максимовна","09-Sep-1991","сметчик","+79031732861","Shushnyaev@gmail.com","NULL","NULL")]
-
-local = time.ctime(time.time())
-
-with sq.connect("employees.db") as base:
-    sql = base.cursor()
-    sql.execute('DROP TABLE IF EXISTS employees')
+with sq.connect("employees.db") as db:
+    sql = db.cursor()
     sql.execute("""CREATE TABLE IF NOT EXISTS employees(
-        firstname TEXT,
-        name TEXT,
-        lastname TEXT,
-        birth TEXT,
-        job TEXT,
-        phone TEXT,
-        email TEXT,
-        enter TEXT ,
-        exit TEXT 
+        ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_number INTEGER,
+        e_firstname TEXT,
+        e_name TEXT,
+        e_lastname TEXT,
+        enter DATETIME,
+        exit DATETIME
         );
         """)
-    sql.executemany("INSERT INTO employees VALUES(?, ? , ?, ?, ? , ?, ? , ?,?)",current)
-base.commit()
+    db.commit()
 
-with sq.connect("guests.db") as base2:
-    sql2 = base2.cursor()
-    sql2.execute('DROP TABLE IF EXISTS guests')
+with sq.connect("guests.db") as db2:
+    sql2 = db2.cursor()
     sql2.execute("""CREATE TABLE IF NOT EXISTS guests(
         firstname TEXT,
         name TEXT,
         lastname TEXT,
-        birth TEXT,
-        phone TEXT,
-        email TEXT,
-        enter INt,
-        exit INT 
+        duration TEXT,
+        enter DATETIME,
+        exit DATETIME
         );
         """)
-base2.commit()
+    db2.commit()
 
 class PassControlApp(QWidget):
     def __init__(self):
         super().__init__()
+        self.initUI()
+        self.employees = pd.read_excel('employees.xlsx')
+
         global sql
-        global base
-        global employees
-        global guests
-        self.sql = 0
-        self.car = 0
-        
-        self.RadioButton=QRadioButton("Вам нужно парковочное место?")
+        global db
 
-        self.issue_pass_button2 = QPushButton('Меню гостя')
-        self.issue_pass_button = QPushButton('Вход')
-        self.issue_pass_button3 = QPushButton('Выход')
-      
-        self.issue_pass_button.clicked.connect(self.ENTER)
-        self.issue_pass_button3.clicked.connect(self.EXIT)
-        self.issue_pass_button2.clicked.connect(self.GST_ENTRY)
-        
-        self.RadioButton.toggled.connect(self.update)
+    def initUI(self):
 
-        self.name = QLineEdit(self,placeholderText="Ведите идентификатор...")
-        
-        self.passv = QLineEdit(self,placeholderText="Ведите ваше Имя...")
+
+        self.button_enter = QPushButton('Выдать пропуск')
+        self.button_enter.clicked.connect(self.ENTER)
+
+        self.button_exit = QPushButton('Выход')
+        self.button_exit.clicked.connect(self.EXIT)
+
+        self.button_guest = QPushButton('Меню гостя')
+        self.button_guest.clicked.connect(self.GST_ENTRY)
+
+        self.emp_id_label = QLabel('id')
+        self.ID = QLineEdit()
+
+        self.emp_first_label = QLabel('Фамилия')
+        self.firstname = QLineEdit()
+
+        self.emp_name_label = QLabel('Имя')
+        self.name = QLineEdit()
+
+        self.emp_last_label = QLabel('Отчество')
+        self.lastname = QLineEdit()
+        self.RadioButton = QRadioButton('Вам нужна парковка?')
 
         layout = QVBoxLayout()
+        layout.addWidget((self.emp_id_label))
+        layout.addWidget(self.ID)
+        layout.addWidget((self.emp_first_label))
+        layout.addWidget(self.firstname)
+        layout.addWidget((self.emp_name_label))
         layout.addWidget(self.name)
-        layout.addWidget(self.passv)
+        layout.addWidget((self.emp_last_label))
+        layout.addWidget(self.lastname)
+
+        layout.addWidget(self.button_enter)
+        layout.addWidget(self.button_exit)
+        layout.addWidget(self.button_guest)
         layout.addWidget(self.RadioButton)
-        layout.addWidget(self.issue_pass_button2)
-        layout.addWidget(self.issue_pass_button)
-        layout.addWidget(self.issue_pass_button3)
+
 
         self.setLayout(layout)
         self.setWindowTitle('Терминал Охраны')
+
+    def parking_e(self):
+        self.e_park = 2
+        self.g_park = 1
+        self.const = self.g_park+self.e_park
+
+        if self.button_enter.clicked.connect() and const > 0:
+            self.do_park('есть свободное парковочное место')
+            const -= 1
+        else:
+            self.do_not_park('парковочные места заняты')
+        if self.exit.button.clicked.connect():
+            const += 1
+        
+
+    def do_not_park(self, message):
+        error_box = QMessageBox()
+        error_box.setIcon(QMessageBox.Icon.Critical)
+        error_box.setText(message)
+        error_box.setWindowTitle('Парковка')
+        error_box.exec()
+
+    def do_park(self, message):
+        message_box = QMessageBox()
+        message_box.setIcon(QMessageBox.Icon.Information)
+        message_box.setText(message)
+        message_box.setWindowTitle('Парковка')
+        message_box.exec()
+
+    def show_deny(self, message):
+        error_box = QMessageBox()
+        error_box.setIcon(QMessageBox.Icon.Critical)
+        error_box.setText(message)
+        error_box.setWindowTitle('Ошибка')
+        error_box.exec()
+
+    def show_acces(self, message):
+        message_box = QMessageBox()
+        message_box.setIcon(QMessageBox.Icon.Information)
+        message_box.setText(message)
+        message_box.setWindowTitle('Выполнение')
+        message_box.exec()
 
     def GST_ENTRY(self):
         pass1.show()
 
     def ENTER(self):
-        global guests
-        global employees
-        self.adc=self.name.text().find("@")
-        self.dfe = self.name.text()
+        if self.RadioButton.toggle:
+            self.parking_e
+        else:
+            pass
+        e_id = self.ID.text()
+        e_firstname = self.firstname.text()
+        e_name = self.name.text()
+        e_lastname = self.lastname.text()
 
-        self.local_time = time.ctime(time.time())
-        if self.car == 1 :
+        if not self.employees['Фамилия'].str.strip().str.lower().eq(e_firstname.lower()).any() and not \
+               self.employees['Имя'].str.strip().str.lower().eq(e_name.lower()).any() and not \
+               self.employees['Отчество'].str.strip().str.lower().eq(e_lastname.lower()).any():
+            self.show_deny('Вас нет в базе данных')
+            return
+        if not e_id.isdigit():
+            self.show_deny('Неподходящие символы - пропуск должен содержать только цифры')
 
-            if employees!=0:
-                if employees<5 and guests>0:
-                    employees=employees-1
-                    guests=guests-1
-                else:
-                    employees=employees-1
-                    print ("Добро, пожаловать, есть свободные парковочные места")
-                sql.execute(f"""UPDATE employees SET enter = ? where email = ? """,[self.local_time,self.dfe])
-                sql.execute('SELECT email FROM employees')
-                self.rows = sql.fetchall()
-                if self.rows.count((self.name.text(),)) :
-                    print("Сотрудник",self.dfe,"Вошёл на территорию предприятия")
-                else:
-                    print("Идентификатор не найден")
-                base.commit()
-              
-            else:
-                print("Извините, парковочных мест нет")
-        elif self.car == 0 :
-            sql.execute(f"""UPDATE employees SET enter = ? where email = ? """,[self.local_time,self.dfe])
-            base.commit()
-            sql.execute('SELECT email FROM employees')
-            self.rows = sql.fetchall()
-            if self.rows.count((self.name.text(),)):
-                print("Сотрудник",self.dfe,"Вошёл на территорию предприятия")
-            else:
-                print("Идентификатор не найден")
+        if len(e_id) > 10:
+            self.show_deny('Cлишком длинный номер пропуска')
+            return
+
+        if not all(map(str.isalpha, [e_firstname, e_name, e_lastname])):
+            self.show_deny('Персональные данные пользователя должны содержать только буквы')
+            return
+        if not e_id or not e_firstname or not e_name or not e_lastname:
+            self.show_deny('Все поля должны быть заполнены.')
+            return
+
+        enter_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        sql.execute('INSERT INTO employees (id_number, e_firstname, e_name, e_lastname, enter) VALUES (?, ?, ?, ? ,  ?)',
+                    (e_id, e_firstname, e_name, e_lastname, enter_time))
+        db.commit()
+        self.show_acces(' Вход успешно зарегистрирован.')
 
     def EXIT(self):
-        global guests
-        global employees
-        self.dfe = self.name.text()
-        if self.car == 1:
-            if employees<5 and guests<5 :
-                employees=employees+1
-                guests=guests+1
-            employees=employees+1
-        self.local_time = time.ctime(time.time())
-        sql.execute(f"""UPDATE employees SET exit = ? where email = ? AND enter != 'NULL' """,[self.local_time,self.dfe])
-        sql.execute('SELECT email FROM employees')
-        self.rows = sql.fetchall()
-        if self.rows.count((self.name.text(),)) :
-            print("Сотрудник",self.dfe,"Вышел с территории предприятия")
+        if self.RadioButton.toggle:
+            self.parking_e
         else:
-            print("Идентификатор не найден")
-        base.commit()
-    base.commit()
+            pass
+        e_id = self.ID.text()
+        e_firstname = self.firstname.text()
+        e_name = self.name.text()
+        e_lastname = self.lastname.text()
 
-    def update(self):
-        if self.car == 0:
-            self.car = 1
-        else:
-            self.car = 0
-        print(self.car)
+        if not e_id.isdigit():
+            self.show_acces('Неподходящие символы - пропуск должен содержать только цифры')
+            return
+        if len(e_id) > 10:
+            self.show_deny('Слишком длинный номер пропуска')
+            return
+        if not all(map(str.isalpha, [e_firstname,e_name, e_lastname])):
+            self.show_deny('Персональные данные пользователя должны содержать только буквы')
+            return
+        if not e_id or not e_firstname or not e_name or not e_lastname:
+            self.show_deny('Все поля должны быть заполнены.')
+            return
+        exit_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        sql.execute('UPDATE employees SET exit = ? WHERE id_number = ? AND exit IS NULL',
+                    (e_id, exit_time))
+        db.commit()
 
+        self.show_acces('Выход успешно зарегистрирован.')
 
 class gst_term(QWidget):
     def __init__(self):
 
         super().__init__()
-        self.car = 0
         global sql2
-        global base2
-        global employees
-        global guests
+        global db2
+        
 
-        self.issue_pass_button2 = QPushButton('Выход')
-        self.issue_pass_button = QPushButton('Вход')
-        self.RadioButton=QRadioButton("Вам нужно парковочное место?")
+        self.guest_first_label = QLabel('Фамилия')
+        self.firstname = QLineEdit()
 
-        self.issue_pass_button.clicked.connect(self.interance)
-        self.issue_pass_button2.clicked.connect(self.gostevoy)
-        self.RadioButton.toggled.connect(self.update)
+        self.guest_name_label = QLabel('Имя')
+        self.name = QLineEdit()
 
-        self.exit= QLineEdit(self,placeholderText="Ведите идентификатор для выхода...")
+        self.guest_last_label = QLabel('Отчество')
+        self.lastname = QLineEdit()
 
-        self.firstname = QLineEdit(self,placeholderText="Фамилия")
-        self.name = QLineEdit(self,placeholderText="Имя")
-        self.lastname = QLineEdit(self,placeholderText="Отчество")
-        self.birth = QLineEdit(self,placeholderText="Дата Рождения")
-        self.phone = QLineEdit(self,placeholderText="Номер Телефона")
-        self.email = QLineEdit(self,placeholderText="Идентификатор")
+        self.guest_time_label = QLabel('Время пребывания')
+        self.duration = QLineEdit()
+
+        self.RadioButton_guest = QRadioButton('Вам нужна Парковка')
 
         layout = QVBoxLayout()
 
-        layout.addWidget(self.firstname)
-        layout.addWidget(self.name)
-        layout.addWidget(self.lastname)
-        layout.addWidget(self.birth)
-        layout.addWidget(self.phone)
-        layout.addWidget(self.email)
+        self.issue_pass_button2 = QPushButton('Выход')
+        self.issue_pass_button = QPushButton('Вход')
+        self.guest_timer = QTimer(self)
 
-        layout.addWidget(self.RadioButton)
+        self.issue_pass_button.clicked.connect(self.gostevoy_vxod)
+        self.issue_pass_button2.clicked.connect(self.gostevoy_vblxod)
+
+        layout.addWidget(self.guest_first_label)
+        layout.addWidget(self.firstname)
+
+        layout.addWidget(self.guest_name_label)
+        layout.addWidget(self.name)
+
+        layout.addWidget(self.guest_last_label)
+        layout.addWidget(self.lastname)
+
+        layout.addWidget(self.guest_time_label)
+        layout.addWidget(self.duration)
         layout.addWidget(self.issue_pass_button)
-        layout.addWidget(self.exit)
         layout.addWidget(self.issue_pass_button2)
+        layout.addWidget(self.RadioButton_guest)
+
+
+
+
+        layout.addWidget(self.g_num)
+        layout.addWidget(self.g_num_label)
 
         self.setLayout(layout)
         self.setWindowTitle('Гостевой Терминал')
 
-    def update(self):
-        if self.car == 0:
-            self.car = 1
-        else:
-            self.car = 0
-        if guests ==0:
-            print("Места Закончились")
+    def parking_g(self):
+        self.g_park = 1
+        self.const = self.g_park
 
-    def gostevoy(self):
-        global guests
-        global employees
-        if self.car == 1:
-            employees = employees + 1
-            guests = guests + 1
-        self.exi = self.exit.text()
-        self.time = time.time()
-        self.local_time = time.ctime(time.time())
-        sql2.execute(f"""UPDATE guests SET exit = ? where email = ? """,[self.time,self.exi])
-        sql2.execute('SELECT email FROM guests')
-        self.rows = sql2.fetchall()
-        if self.rows.count((self.exit.text(),)) :
-            print("Гость",self.exi,"Вышел c территории предприятия")
-            sql2.execute('SELECT enter , exit FROM guests WHERE email = ? ', (self.pochtat,))
-            self.rows2 = sql2.fetchall()
-            self.tkk = self.rows2[0]
-            self.tk,self.tx = self.tkk
-            if self.tx-self.tk>10:
-                print(f"Гость {self.exi} - вы превысили допустимое время на :{round((self.tx)-(self.tk)-10)} сек, 'необходимо обратиться к начальству'")
-            if self.tx-self.tk<10:
-                print(f"Гость {self.exi} вы пробыли : {round((self.tx)-(self.tk))} ")
+        if self.button_enter.clicked.connect() and const > 0:
+            self.do_park('есть свободное парковочное место')
+            const -= 1
         else:
-            print("Идентификатор не найден")
+            self.do_not_park('парковочные места заняты')
+        if self.exit.button.clicked.connect():
+            const += 1
+        
 
-    def interance(self):
-        global guests
-        global employees
-        if self.car == 1:
-            if guests ==0:
-                print("Места Закончились")
-            else:
-                employees = employees - 1
-                guests = guests - 1
-                self.time = time.time()
-                self.familt=self.firstname.text()
-                self.namet=self.name.text()
-                self.otcht=self.lastname.text()
-                self.datet=self.birth.text()
-                self.nomert=self.phone.text()
-                self.pochtat=self.email.text()
-                self.CORT=[(self.familt,self.namet,self.otcht,self.datet,self.nomert,self.pochtat,self.time,0)]
-                    
-                sql2.execute('SELECT email FROM guests')
-                self.rows = sql2.fetchall()
-                if self.rows.count((self.email.text(),)) :
-                    print("Идентификатор уже используется")
-                else:
-                    print("Гость",self.pochtat,"Вошёл на территорию предприятия")
-                    sql2.executemany("INSERT INTO guests VALUES( ?, ? , ? , ? , ? , ? , ? , ? )",self.CORT)
-                    base2.commit()
+    def do_not_park(self, message):
+        error_box = QMessageBox()
+        error_box.setIcon(QMessageBox.Icon.Critical)
+        error_box.setText(message)
+        error_box.setWindowTitle('Парковка')
+        error_box.exec()
+
+    def do_park(self, message):
+        message_box = QMessageBox()
+        message_box.setIcon(QMessageBox.Icon.Information)
+        message_box.setText(message)
+        message_box.setWindowTitle('Парковка')
+        message_box.exec()
+
+    def show_deny(self, message):
+        error_box = QMessageBox()
+        error_box.setIcon(QMessageBox.Icon.Critical)
+        error_box.setText(message)
+        error_box.setWindowTitle('Ошибка')
+        error_box.exec()
+
+    def show_acces(self, message):
+        message_box = QMessageBox()
+        message_box.setIcon(QMessageBox.Icon.Information)
+        message_box.setText(message)
+        message_box.setWindowTitle('Успех')
+        message_box.exec()
+
+    def gostevoy_vxod(self):
+        if self.RadioButton_guest.toggle:
+            self.parking_g
         else:
-            self.time = time.time()
-            self.familt=self.firstname.text()
-            self.namet=self.name.text()
-            self.otcht=self.lastname.text()
-            self.datet=self.phone.text()
-            self.nomert=self.phone.text()
-            self.pochtat=self.email.text()
-            self.CORT=[(self.familt,self.namet,self.otcht,self.datet,self.nomert,self.pochtat,self.time,0)]
-            sql2.execute('SELECT email FROM guests')
-            self.rows = sql2.fetchall()
-            if self.rows.count((self.email.text(),)) :
-                print("Идентификатор уже используется")
-            else:
-                print("Гость",self.pochtat,"Вошёл на территорию предприятия")
-                sql2.executemany("INSERT INTO guests VALUES( ?, ? , ? , ? , ? , ? , ? , ? )",self.CORT)
-                base2.commit()
+            pass
+        ent_time = datetime.now()
+        g_firstname = self.firstname.text()
+        g_name = self.name.text()
+        g_lastname = self.lastname.text()
+        dur = int(self.duration.text())
+
+        if not all(map(str.isalpha, [g_name, g_firstname, g_lastname])):
+            self.show_deny('Имя и фамилия должны содержать только буквы.')
+            return
+        if not g_firstname or not g_name or not g_lastname or not dur:
+            self.show_deny('Все поля должны быть заполнены.')
+            return
+
+        ent_time = datetime.now()
+        sql2.execute(
+            'INSERT INTO guests (firstname, name, lastname, duration, enter) VALUES (?, ?, ?, ?, ?)',
+            (g_firstname, g_name, g_lastname, dur, ent_time))
+        db2.commit()
+
+        self.show_acces('Вход успешно зарегистрирован.')
+        self.guest_timer.start(1000 * 50 * dur)
+
+    def gostevoy_vblxod(self):
+        if self.RadioButton_guest.toggle:
+            self.parking_g
+        else:
+            pass
+        ext_time = datetime.now()
+        g_firstname = self.firstname.text()
+        g_name = self.name.text()
+        g_lastname = self.lastname.text()
+        dur = int(self.duration.text())
+
+        if not all(map(str.isalpha, [g_name, g_firstname, g_lastname])):
+            self.show_deny('Имя и фамилия должны содержать только буквы.')
+            return
+        if not g_firstname or not g_name or not g_lastname or not dur:
+            self.show_deny('Все поля должны быть заполнены.')
+            return
+        ext_time = datetime.now()
+        sql2.execute('UPDATE guests SET exit = ? WHERE firstname = ? AND name = ? AND lastname = ? AND duration = ? AND exit IS NULL',
+         (ext_time,g_firstname,g_name, g_lastname, dur))
+        db2.commit()
+
+        self.show_acces('Выход успешно зарегистрирован.')
+        self.guest_timer.stop
+
+
+def time_control(self):
+    current_time = datetime.now()
+    sql2.execute(
+        'SELECT * FROM guests WHERE exit IS NULL AND strftime("%s", ?) > strftime("%s", entry) + duration',
+        (current_time,))
+    dummy = sql2.fetchall()
+
+    if dummy:
+        message = 'ЩА МЕНТОВ ВЫЗОВУ!.'
+        self.show_error(message)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
