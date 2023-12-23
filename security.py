@@ -140,9 +140,12 @@ class PassControlApp(QWidget):
         e_name = self.name.text()
         e_lastname = self.lastname.text()
 
+        if not e_id or not e_firstname or not e_name or not e_lastname:
+            self.show_deny('Все поля должны быть заполнены.')
+            return
         if not self.employees['Фамилия'].str.strip().str.lower().eq(e_firstname.lower()).any() and not \
-               self.employees['Имя'].str.strip().str.lower().eq(e_name.lower()).any() and not \
-               self.employees['Отчество'].str.strip().str.lower().eq(e_lastname.lower()).any():
+            self.employees['Имя'].str.strip().str.lower().eq(e_name.lower()).any() and not \
+            self.employees['Отчество'].str.strip().str.lower().eq(e_lastname.lower()).any():
             self.show_deny('Вас нет в базе данных')
             return
         if not e_id.isdigit():
@@ -151,19 +154,17 @@ class PassControlApp(QWidget):
         if len(e_id) > 10:
             self.show_deny('Cлишком длинный номер пропуска')
             return
-
         if not all(map(str.isalpha, [e_firstname, e_name, e_lastname])):
             self.show_deny('Персональные данные пользователя должны содержать только буквы')
             return
-        if not e_id or not e_firstname or not e_name or not e_lastname:
-            self.show_deny('Все поля должны быть заполнены.')
-            return
+        
 
         enter_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         sql.execute('INSERT INTO employees (id_number, e_firstname, e_name, e_lastname, enter) VALUES (?, ?, ?, ? ,  ?)',
                     (e_id, e_firstname, e_name, e_lastname, enter_time))
         db.commit()
+
         self.show_acces(' Вход успешно зарегистрирован.')
 
     def EXIT(self):
@@ -190,7 +191,7 @@ class PassControlApp(QWidget):
             return
         exit_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         sql.execute('UPDATE employees SET exit = ? WHERE id_number = ? AND exit IS NULL',
-                    (e_id, exit_time))
+                    (exit_time, e_id))
         db.commit()
 
         self.show_acces('Выход успешно зарегистрирован.')
@@ -241,11 +242,6 @@ class gst_term(QWidget):
         layout.addWidget(self.issue_pass_button2)
         layout.addWidget(self.RadioButton_guest)
 
-
-
-
-        layout.addWidget(self.g_num)
-        layout.addWidget(self.g_num_label)
 
         self.setLayout(layout)
         self.setWindowTitle('Гостевой Терминал')
@@ -315,8 +311,8 @@ class gst_term(QWidget):
             (g_firstname, g_name, g_lastname, dur, ent_time))
         db2.commit()
 
-        self.show_acces('Вход успешно зарегистрирован.')
-        self.guest_timer.start(1000 * 50 * dur)
+        self.show_acces('Гостевой вход успешно зарегистрирован.')
+        self.guest_timer.start(1000 * 60 * dur)
 
     def gostevoy_vblxod(self):
         if self.RadioButton_guest.toggle:
@@ -340,14 +336,14 @@ class gst_term(QWidget):
          (ext_time,g_firstname,g_name, g_lastname, dur))
         db2.commit()
 
-        self.show_acces('Выход успешно зарегистрирован.')
+        self.show_acces('Гостевой выход успешно зарегистрирован.')
         self.guest_timer.stop
 
 
 def time_control(self):
     current_time = datetime.now()
     sql2.execute(
-        'SELECT * FROM guests WHERE exit IS NULL AND strftime("%s", ?) > strftime("%s", entry) + duration',
+        'SELECT * FROM guests WHERE exit IS NULL AND strftime("%s", ?) > strftime("%s", enter) + duration',
         (current_time,))
     dummy = sql2.fetchall()
 
