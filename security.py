@@ -129,19 +129,17 @@ class PassControlApp(QWidget):
         if not all(map(str.isalpha, [e_firstname, e_name, e_lastname])):
             self.show_deny('Персональные данные пользователя должны содержать только буквы')
             return
-        if self.RadioButton.toggle:
+        if self.RadioButton.isChecked():
             if self.park_e + self.park_g > 0:
                 self.show_acces('вы заняли парковочное место')
                 self.park_e -= 1
             elif self.park_g > 0:
                 self.show_acces('вы заняли парковочное место')
-                self.park_g -= 1
-                    
+                self.park_g -= 1  
             else:
                 self.show_deny('все парковочные места заняты')
         else:
             pass
-        
         enter_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         sql.execute('INSERT INTO employees (id_number, e_firstname, e_name, e_lastname, enter) VALUES (?, ?, ?, ? ,  ?)',
@@ -172,7 +170,7 @@ class PassControlApp(QWidget):
         sql.execute('UPDATE employees SET exit = ? WHERE id_number = ? AND exit IS NULL',
                     (exit_time, e_id))
         db.commit()
-        if self.RadioButton.toggle:
+        if self.RadioButton.isChecked():
             if self.park_g == 0:
                 self.park_g += 1
             else:
@@ -266,7 +264,7 @@ class gst_term(QWidget):
             (g_firstname, g_name, g_lastname, dur, ent_time))
         db2.commit()
 
-        if self.RadioButton_guest.toggle:
+        if self.RadioButton_guest.isChecked():
             if self.park_g > 0:
                 self.park_g -= 1
                 self.show_acces('вы заняли парковочное место')
@@ -298,7 +296,7 @@ class gst_term(QWidget):
         self.show_acces('Гостевой выход успешно зарегистрирован.')
         self.guest_timer.stop
 
-        if self.RadioButton_guest.toggle:
+        if self.RadioButton_guest.ifChecked():
             self.park_g += 1
         else:
             pass
