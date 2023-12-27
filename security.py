@@ -40,6 +40,8 @@ class PassControlApp(QWidget):
 
         global sql
         global db
+        self.park_e = 2
+        self.park_g = 1
 
     def initUI(self):
 
@@ -84,35 +86,7 @@ class PassControlApp(QWidget):
 
         self.setLayout(layout)
         self.setWindowTitle('Терминал Охраны')
-
-    def parking_e(self):
-        self.e_park = 2
-        self.g_park = 1
-        self.const = self.g_park+self.e_park
-
-        if self.button_enter.clicked.connect() and const > 0:
-            self.do_park('есть свободное парковочное место')
-            const -= 1
-        else:
-            self.do_not_park('парковочные места заняты')
-        if self.exit.button.clicked.connect():
-            const += 1
         
-
-    def do_not_park(self, message):
-        error_box = QMessageBox()
-        error_box.setIcon(QMessageBox.Icon.Critical)
-        error_box.setText(message)
-        error_box.setWindowTitle('Парковка')
-        error_box.exec()
-
-    def do_park(self, message):
-        message_box = QMessageBox()
-        message_box.setIcon(QMessageBox.Icon.Information)
-        message_box.setText(message)
-        message_box.setWindowTitle('Парковка')
-        message_box.exec()
-
     def show_deny(self, message):
         error_box = QMessageBox()
         error_box.setIcon(QMessageBox.Icon.Critical)
@@ -131,14 +105,12 @@ class PassControlApp(QWidget):
         pass1.show()
 
     def ENTER(self):
-        if self.RadioButton.toggle:
-            self.parking_e
-        else:
-            pass
         e_id = self.ID.text()
         e_firstname = self.firstname.text()
         e_name = self.name.text()
         e_lastname = self.lastname.text()
+        self.park_e = 2
+        self.park_g = 1
 
         if not e_id or not e_firstname or not e_name or not e_lastname:
             self.show_deny('Все поля должны быть заполнены.')
@@ -157,8 +129,19 @@ class PassControlApp(QWidget):
         if not all(map(str.isalpha, [e_firstname, e_name, e_lastname])):
             self.show_deny('Персональные данные пользователя должны содержать только буквы')
             return
+        if self.RadioButton.toggle:
+            if self.park_e + self.park_g > 0:
+                self.show_acces('вы заняли парковочное место')
+                self.park_e -= 1
+            elif self.park_g > 0:
+                self.show_acces('вы заняли парковочное место')
+                self.park_g -= 1
+                    
+            else:
+                self.show_deny('все парковочные места заняты')
+        else:
+            pass
         
-
         enter_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         sql.execute('INSERT INTO employees (id_number, e_firstname, e_name, e_lastname, enter) VALUES (?, ?, ?, ? ,  ?)',
@@ -168,10 +151,6 @@ class PassControlApp(QWidget):
         self.show_acces(' Вход успешно зарегистрирован.')
 
     def EXIT(self):
-        if self.RadioButton.toggle:
-            self.parking_e
-        else:
-            pass
         e_id = self.ID.text()
         e_firstname = self.firstname.text()
         e_name = self.name.text()
@@ -193,6 +172,11 @@ class PassControlApp(QWidget):
         sql.execute('UPDATE employees SET exit = ? WHERE id_number = ? AND exit IS NULL',
                     (exit_time, e_id))
         db.commit()
+        if self.RadioButton.toggle:
+            if self.park_g == 0:
+                self.park_g += 1
+            else:
+                self.park_e += 1
 
         self.show_acces('Выход успешно зарегистрирован.')
 
@@ -202,7 +186,8 @@ class gst_term(QWidget):
         super().__init__()
         global sql2
         global db2
-        
+        self.park_e = 2
+        self.park_g = 1
 
         self.guest_first_label = QLabel('Фамилия')
         self.firstname = QLineEdit()
@@ -246,33 +231,6 @@ class gst_term(QWidget):
         self.setLayout(layout)
         self.setWindowTitle('Гостевой Терминал')
 
-    def parking_g(self):
-        self.g_park = 1
-        self.const = self.g_park
-
-        if self.button_enter.clicked.connect() and const > 0:
-            self.do_park('есть свободное парковочное место')
-            const -= 1
-        else:
-            self.do_not_park('парковочные места заняты')
-        if self.exit.button.clicked.connect():
-            const += 1
-        
-
-    def do_not_park(self, message):
-        error_box = QMessageBox()
-        error_box.setIcon(QMessageBox.Icon.Critical)
-        error_box.setText(message)
-        error_box.setWindowTitle('Парковка')
-        error_box.exec()
-
-    def do_park(self, message):
-        message_box = QMessageBox()
-        message_box.setIcon(QMessageBox.Icon.Information)
-        message_box.setText(message)
-        message_box.setWindowTitle('Парковка')
-        message_box.exec()
-
     def show_deny(self, message):
         error_box = QMessageBox()
         error_box.setIcon(QMessageBox.Icon.Critical)
@@ -288,10 +246,7 @@ class gst_term(QWidget):
         message_box.exec()
 
     def gostevoy_vxod(self):
-        if self.RadioButton_guest.toggle:
-            self.parking_g
-        else:
-            pass
+    
         ent_time = datetime.now()
         g_firstname = self.firstname.text()
         g_name = self.name.text()
@@ -311,14 +266,18 @@ class gst_term(QWidget):
             (g_firstname, g_name, g_lastname, dur, ent_time))
         db2.commit()
 
+        if self.RadioButton_guest.toggle:
+            if self.park_g > 0:
+                self.park_g -= 1
+                self.show_acces('вы заняли парковочное место')
+            else:
+                self.show_deny('все парковочные места заняты')
+
         self.show_acces('Гостевой вход успешно зарегистрирован.')
         self.guest_timer.start(1000 * 60 * dur)
 
     def gostevoy_vblxod(self):
-        if self.RadioButton_guest.toggle:
-            self.parking_g
-        else:
-            pass
+        
         ext_time = datetime.now()
         g_firstname = self.firstname.text()
         g_name = self.name.text()
@@ -338,6 +297,11 @@ class gst_term(QWidget):
 
         self.show_acces('Гостевой выход успешно зарегистрирован.')
         self.guest_timer.stop
+
+        if self.RadioButton_guest.toggle:
+            self.park_g += 1
+        else:
+            pass
 
 
 def time_control(self):
